@@ -11,3 +11,131 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  TEACHER
+  STUDENT
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  RETURNED
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String?
+  name     String
+  role     UserRole
+
+  classId String?
+  batchId String?
+
+  class Class? @relation("StudentClass", fields: [classId], references: [id], onDelete: SetNull)
+  batch Batch? @relation("StudentBatch", fields: [batchId], references: [id], onDelete: SetNull)
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([classId])
+  @@index([batchId])
+}
+
+model Class {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  batches     Batch[]
+  assignments Assignment[]
+  students    User[]       @relation("StudentClass")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Batch {
+  id       String  @id @default(cuid())
+  name     String
+  schedule String?
+  classId  String
+
+  class    Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students User[] @relation("StudentBatch")
+
+  assignments Assignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([classId, name])
+  @@index([classId])
+}
+
+model Subject {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  assignments Assignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  pdfUrl      String?
+  dueDate     DateTime
+
+  classId   String
+  batchId   String?
+  subjectId String
+
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  batch   Batch?  @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([classId])
+  @@index([batchId])
+  @@index([dueDate])
+}
+
+model Submission {
+  id     String           @id @default(cuid())
+  status SubmissionStatus @default(SUBMITTED)
+
+  studentPdfUrl String?
+  teacherPdfUrl String?
+
+  grade    String?
+  feedback String?
+
+  submittedAt DateTime  @default(now())
+  gradedAt    DateTime?
+
+  assignmentId String
+  studentId    String
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assignmentId])
+  @@index([studentId])
+  @@index([status])
+}
