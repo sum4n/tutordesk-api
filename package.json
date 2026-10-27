@@ -4,7 +4,7 @@
   "description": "ExpressJS api for tutordesk",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.js",
+    "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "postinstall": "prisma generate"
