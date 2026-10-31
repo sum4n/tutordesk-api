@@ -15,7 +15,7 @@ export interface AuthUser {
 }
 
 // What every user-related endpoint returns. No password, no timestamps.
-export interface PublicUser {
+export interface SerializedUser {
   id: string;
   email: string;
   name: string;
