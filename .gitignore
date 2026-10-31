@@ -143,3 +143,12 @@ vite.config.ts.timestamp-*
 .vite/
 
 /src/generated/prisma
+
+# AI Coding Assistants & Agents
+.agents/
+.claude/
+.windsurf/
+.codeiumignore
+.cursorignore
+.clineignore
+
