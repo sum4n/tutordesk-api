@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../errors/AppError.js";
 import type { CreateClassInput, UpdateClassInput } from "./classes.schemas.js";
+import { isUniqueConstraintError } from "../lib/prismaErrors.js";
 
 // Bare array, matching json-server's shape. Every consumer does
 // `const classes: Class[] = await res.json()`.
@@ -16,15 +17,22 @@ export const createClass: RequestHandler = async (req, res) => {
   // validateBody has run: req.body is CreateClassInput at runtime.
   const { name, description } = req.body as CreateClassInput;
 
-  const created = await prisma.class.create({
-    data: {
-      name,
-      // description is optional in the schema; DB column is nullable.
-      description: description ?? null,
-    },
-  });
+  try {
+    const created = await prisma.class.create({
+      data: {
+        name,
+        // description is optional in the schema; DB column is nullable.
+        description: description ?? null,
+      },
+    });
 
-  res.status(201).json(created);
+    res.status(201).json(created);
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw new AppError("A class with this name already exists", 409);
+    }
+    throw error;
+  }
 };
 
 export const updateClass: RequestHandler<{ id: string }> = async (req, res) => {
@@ -41,13 +49,21 @@ export const updateClass: RequestHandler<{ id: string }> = async (req, res) => {
   // Build the update payload only from supplied fields.
   // Passing `undefined` to Prisma means "do not update this field",
   // which is exactly the PATCH semantics.
-  const updated = await prisma.class.update({
-    where: { id },
-    data: {
-      name,
-      description,
-    },
-  });
+  let updated;
+  try {
+    updated = await prisma.class.update({
+      where: { id },
+      data: {
+        name,
+        description,
+      },
+    });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw new AppError("A class with this name already exists", 409);
+    }
+    throw error;
+  }
 
   res.status(200).json(updated);
 };
