@@ -6,6 +6,7 @@ import { authRouter } from "./auth/auth.routes.js";
 import { classRouter } from "./classes/classes.routes.js";
 import { batchRouter } from "./batches/batches.routes.js";
 import { userRouter } from "./users/users.routes.js";
+import { assignmentRouter } from "./assignments/assignments.routes.js";
 
 export const app = express();
 
@@ -25,5 +26,6 @@ app.use("/classes", classRouter);
 app.use("/batches", batchRouter);
 
 app.use("/users", userRouter);
+app.use("/assignments", assignmentRouter);
 
 app.use(errorHandler);
