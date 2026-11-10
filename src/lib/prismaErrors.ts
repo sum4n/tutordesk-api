@@ -13,3 +13,14 @@ export function isUniqueConstraintError(error: unknown): boolean {
     error.code === "P2002"
   );
 }
+
+// P2003 = foreign key constraint violated on delete/update.
+// Raised when a row cannot be deleted because another table still
+// references it, and the relation is Restrict or NoAction.
+// Deleting a subject that assignments point at lands here.
+export function isForeignKeyConstraintError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2003"
+  );
+}
