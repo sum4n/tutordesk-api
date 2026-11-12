@@ -79,7 +79,7 @@ model Batch {
 
 model Subject {
   id          String  @id @default(cuid())
-  name        String
+  name        String  @unique
   description String?
 
   assignments Assignment[]

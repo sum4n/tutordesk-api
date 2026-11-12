@@ -92,6 +92,20 @@ describe("POST /subjects", () => {
     expect(res.status).toBe(400);
     expect(JSON.stringify(res.body.details)).toContain("classId");
   });
+
+  it("reject a duplicate name with 409", async () => {
+    const token = await getTeacherToken(app);
+
+    await prisma.subject.create({ data: { name: "Mathematics" } });
+
+    const res = await request(app)
+      .post("/subjects")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ name: "Mathematics" });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe("A subject with this name already exists");
+  });
 });
 
 describe("PATCH /subjects/:id", () => {
@@ -118,6 +132,20 @@ describe("PATCH /subjects/:id", () => {
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Subject not found");
+  });
+
+  it("rejects a rename that collides with another subject with 409", async () => {
+    const token = await getTeacherToken(app);
+    await prisma.subject.create({ data: { name: "Mathematics" } });
+    const other = await prisma.subject.create({ data: { name: "Physics" } });
+
+    const res = await request(app)
+      .patch(`/subjects/${other.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ name: "Mathematics" });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe("A subject with this name already exists");
   });
 });
 

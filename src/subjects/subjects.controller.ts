@@ -1,7 +1,10 @@
 import type { RequestHandler } from "express";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../errors/AppError.js";
-import { isForeignKeyConstraintError } from "../lib/prismaErrors.js";
+import {
+  isForeignKeyConstraintError,
+  isUniqueConstraintError,
+} from "../lib/prismaErrors.js";
 import type {
   CreateSubjectInput,
   UpdateSubjectInput,
@@ -20,11 +23,17 @@ export const listSubjects: RequestHandler = async (_req, res) => {
 export const createSubject: RequestHandler = async (req, res) => {
   const { name, description } = req.body as CreateSubjectInput;
 
-  const created = await prisma.subject.create({
-    data: { name, description: description ?? null },
-  });
-
-  res.status(201).json(created);
+  try {
+    const created = await prisma.subject.create({
+      data: { name, description: description ?? null },
+    });
+    res.status(201).json(created);
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw new AppError("A subject with this name already exists", 409);
+    }
+    throw error;
+  }
 };
 
 export const updateSubject: RequestHandler<{ id: string }> = async (
@@ -41,10 +50,18 @@ export const updateSubject: RequestHandler<{ id: string }> = async (
     throw new AppError("Subject not found", 404);
   }
 
-  const updated = await prisma.subject.update({
-    where: { id },
-    data: { name, description },
-  });
+  let updated;
+  try {
+    updated = await prisma.subject.update({
+      where: { id },
+      data: { name, description },
+    });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw new AppError("A subject with this name already exists", 409);
+    }
+    throw error;
+  }
 
   res.status(200).json(updated);
 };
