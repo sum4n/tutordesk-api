@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:migrate": "prisma migrate dev && DATABASE_URL=\"postgresql://tutordesk:tutordesk@localhost:5433/tutordesk_test?schema=public\" prisma migrate deploy"
   },
   "engines": {
     "node": "24.x"
