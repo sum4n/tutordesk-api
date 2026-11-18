@@ -8,6 +8,7 @@ import { batchRouter } from "./batches/batches.routes.js";
 import { userRouter } from "./users/users.routes.js";
 import { assignmentRouter } from "./assignments/assignments.routes.js";
 import { subjectRouter } from "./subjects/subjects.routes.js";
+import { submissionRouter } from "./submissions/submissions.routes.js";
 
 export const app = express();
 
@@ -29,5 +30,6 @@ app.use("/batches", batchRouter);
 app.use("/users", userRouter);
 app.use("/assignments", assignmentRouter);
 app.use("/subjects", subjectRouter);
+app.use("/submissions", submissionRouter);
 
 app.use(errorHandler);
