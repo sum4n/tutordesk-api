@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Normalize BEFORE validating. Zod runs checks in declaration order.
-const emailField = z.string().trim().toLowerCase().pipe(z.email());
+export const emailField = z.string().trim().toLowerCase().pipe(z.email());
 
 // Strict: unknown keys are a 400, not silently stripped.
 // Critical here because we want to REJECT `role: "teacher"` from a
